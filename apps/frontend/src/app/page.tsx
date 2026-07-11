@@ -3,6 +3,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Database, FileText, Layers, Loader2, Bot, User } from "lucide-react";
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+
 type Message = {
   role: "user" | "assistant";
   content: string;
@@ -34,11 +37,11 @@ export default function ChatPage() {
 
     try {
       // Calling your NestJS backend on port 4000
-      const res = await fetch("http://localhost:4000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMsg }),
-      });
+    const res = await fetch(`${baseUrl}/chat`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ message: userMsg }),
+});
 
       if (!res.ok) throw new Error("Network response was not ok");
       

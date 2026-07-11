@@ -45,3 +45,5 @@ ehthumbs.db
 Thumbs.db
 
 *.db
+
+.env.local
