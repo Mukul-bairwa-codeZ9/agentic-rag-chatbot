@@ -15,6 +15,15 @@ export class DocumentLoaderService {
   private readonly logger = new Logger(DocumentLoaderService.name);
 
   async loadDocuments(): Promise<LoadedDocument[]> {
+    // 1. Safety Check: Verify directory exists before attempting to read
+    try {
+      await fs.access(env.documentsPath);
+    } catch (error) {
+      this.logger.warn(`Directory not found at ${env.documentsPath}. Skipping document ingestion.`);
+      return []; // Return an empty array so the app boots successfully
+    }
+
+    // 2. Proceed only if the directory exists
     const files = await fs.readdir(env.documentsPath);
     const pdfFiles = files.filter((f) => f.endsWith('.pdf'));
     const documents: LoadedDocument[] = [];
@@ -24,11 +33,9 @@ export class DocumentLoaderService {
       const filePath = path.join(env.documentsPath, file);
 
       try {
-        // Use LangChain's official PDF loader to bypass compiler quirks entirely
         const loader = new PDFLoader(filePath);
         const loadedDocs = await loader.load();
 
-        // LangChain splits by page. We map and join them into a single string.
         const fullText = loadedDocs.map(doc => doc.pageContent).join(' ');
 
         documents.push({
