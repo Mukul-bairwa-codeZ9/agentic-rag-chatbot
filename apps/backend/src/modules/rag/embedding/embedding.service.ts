@@ -1,40 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { OpenAIEmbeddings } from '@langchain/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { Document } from '@langchain/core/documents';
-import { LoadedDocument } from '../../documents/document-loader/document-loader.service';
 
 @Injectable()
 export class EmbeddingService {
+  // We chunk the text into blocks of 1000 characters, with 200 characters of overlap
+  // so we don't accidentally cut a sentence in half!
   private readonly splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 700,
-    chunkOverlap: 100,
+    chunkSize: 1000,
+    chunkOverlap: 200,
   });
 
-  private readonly embeddings = new OpenAIEmbeddings({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-
-  async createChunks(documents: LoadedDocument[]) {
+  async createChunks(documents: { source: string; content: string }[]) {
     const chunks: Document[] = [];
 
     for (const doc of documents) {
-      const split = await this.splitter.createDocuments(
+      // Split the raw text and attach the filename as metadata for citations
+      const splitDocs = await this.splitter.createDocuments(
         [doc.content],
-        [
-          {
-            source: doc.source,
-          },
-        ],
+        [{ source: doc.source }] 
       );
-
-      chunks.push(...split);
+      chunks.push(...splitDocs);
     }
 
     return chunks;
-  }
-
-  getEmbeddingModel() {
-    return this.embeddings;
   }
 }

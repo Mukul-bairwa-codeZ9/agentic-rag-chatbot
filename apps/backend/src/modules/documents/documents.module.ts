@@ -3,6 +3,6 @@ import { DocumentLoaderService } from './document-loader/document-loader.service
 
 @Module({
   providers: [DocumentLoaderService],
-  exports: [DocumentLoaderService],
+  exports: [DocumentLoaderService], 
 })
 export class DocumentsModule {}

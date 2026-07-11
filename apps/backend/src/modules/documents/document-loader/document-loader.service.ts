@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
+import { env } from '../../../config/env.config';
+import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 
 export interface LoadedDocument {
   id: string;
@@ -14,33 +14,34 @@ export interface LoadedDocument {
 export class DocumentLoaderService {
   private readonly logger = new Logger(DocumentLoaderService.name);
 
-  private readonly documentsPath =
-    process.env.DOCUMENTS_PATH ||
-    path.join(process.cwd(), 'src/data/documents');
-
   async loadDocuments(): Promise<LoadedDocument[]> {
-    const files = await fs.readdir(this.documentsPath);
+    const files = await fs.readdir(env.documentsPath);
+    const pdfFiles = files.filter((f) => f.endsWith('.pdf'));
+    const documents: LoadedDocument[] = [];
 
-    const pdfs = files.filter((f) => f.endsWith('.pdf'));
-
-    const docs: LoadedDocument[] = [];
-
-    for (const file of pdfs) {
+    for (const file of pdfFiles) {
       this.logger.log(`Loading ${file}`);
+      const filePath = path.join(env.documentsPath, file);
 
-      const buffer = await fs.readFile(path.join(this.documentsPath, file));
+      try {
+        // Use LangChain's official PDF loader to bypass compiler quirks entirely
+        const loader = new PDFLoader(filePath);
+        const loadedDocs = await loader.load();
 
-      const parsed = await pdfParse(buffer);
+        // LangChain splits by page. We map and join them into a single string.
+        const fullText = loadedDocs.map(doc => doc.pageContent).join(' ');
 
-      docs.push({
-        id: file.replace('.pdf', ''),
-        source: file,
-        content: parsed.text.replace(/\s+/g, ' ').trim(),
-      });
+        documents.push({
+          id: file.replace('.pdf', ''),
+          source: file,
+          content: fullText.replace(/\s+/g, ' ').trim(),
+        });
+      } catch (error) {
+        this.logger.error(`Failed to parse ${file}: ${error}`);
+      }
     }
 
-    this.logger.log(`${docs.length} documents loaded`);
-
-    return docs;
+    this.logger.log(`${documents.length} documents loaded.`);
+    return documents;
   }
 }

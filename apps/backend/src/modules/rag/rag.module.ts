@@ -7,14 +7,14 @@ import { RagService } from './rag.service';
 @Module({
   imports: [DocumentsModule],
   providers: [
-    EmbeddingService,
-    RetrieverService,
-    RagService,
+    EmbeddingService, 
+    RetrieverService, 
+    RagService
   ],
   exports: [
-    RagService,
-    EmbeddingService,
-    RetrieverService,
+    RagService, 
+    EmbeddingService, 
+    RetrieverService
   ],
 })
 export class RagModule {}

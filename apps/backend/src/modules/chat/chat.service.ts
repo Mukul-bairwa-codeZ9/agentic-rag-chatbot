@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { RouterService } from '../router/router.service';
 
 @Injectable()
 export class ChatService {
+  constructor(private readonly routerService: RouterService) {}
+
   async chat(message: string) {
-    return {
-      message,
-      status: 'working',
-    };
+    return this.routerService.routeAndExecute(message);
   }
 }
