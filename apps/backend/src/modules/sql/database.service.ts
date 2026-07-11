@@ -13,13 +13,13 @@ export class DatabaseService implements OnModuleInit {
     this.logger.log('Initializing built-in Node 24 SQLite database...');
     
     // Ensure the sqlite directory exists
-    const dir = path.dirname(env.sqlitePath);
+    const dir = path.dirname(env.sqliteDbPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
 
     // Use Node 24's native, built-in SQLite (Zero C++ bindings needed!)
-    this.db = new DatabaseSync(env.sqlitePath);
+    this.db = new DatabaseSync(env.sqliteDbPath);
     
     this.createTable();
     this.seedCsv();
