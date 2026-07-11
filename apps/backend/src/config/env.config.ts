@@ -1,7 +1,9 @@
 import * as dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config();
+
+const envPath = path.resolve(__dirname, '../../../../.env');
+dotenv.config({ path: envPath });
 
 function getEnv(key: string, required = true): string {
   const value = process.env[key];
@@ -15,17 +17,13 @@ function getEnv(key: string, required = true): string {
 
 export const env = {
   groq: {
-    apiKey: getEnv('OPENAI_API_KEY'),
-    baseUrl: getEnv('OPENAI_BASE_URL'),
-    model: process.env.GROQ_MODEL ?? 'llama-3.3-70b-versatile',
+    apiKey: process.env.OPENAI_API_KEY,
+    baseUrl: process.env.OPENAI_BASE_URL,
+    model: 'llama-3.3-70b-versatile',
   },
-
   google: {
-    apiKey: getEnv('GOOGLE_API_KEY'),
-    embeddingModel:
-      process.env.GEMINI_EMBEDDING_MODEL 
+    apiKey: process.env.GOOGLE_API_KEY,
   },
-
- documentsPath: process.env.DOCUMENTS_PATH || path.join(process.cwd(), 'data', 'documents'),
-  sqlitePath: process.env.SQLITE_DB_PATH || path.join(process.cwd(), 'data', 'sqlite', 'orders.db'),
+  documentsPath: process.env.DOCUMENTS_PATH || 'data/documents',
+  sqliteDbPath: process.env.SQLITE_DB_PATH || 'data/sqlite/orders.db',
 };
